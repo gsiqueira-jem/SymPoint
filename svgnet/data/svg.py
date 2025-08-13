@@ -59,9 +59,10 @@ class SVGDataset(Dataset):
 
     CLASSES = tuple([x["name"] for x in SVG_CATEGORIES])
 
-    def __init__(self, data_root, split,data_norm,aug, repeat=1, logger=None):
+    def __init__(self, data_root, split,data_norm,aug, repeat=1, visualize=False, logger=None):
         
         self.split = split
+        self.visualize = visualize
         self.data_norm = data_norm
         self.aug = aug
         self.repeat = repeat
@@ -129,7 +130,11 @@ class SVGDataset(Dataset):
         if self.split=="train":
             return self.transform_train(coord, feat, label)
         else:
-            return self.transform_test(coord, feat, label,lengths)
+            if self.visualize:
+                return (*(self.transform_test(coord, feat, label,lengths)), json_file)
+                
+            else:
+                return self.transform_test(coord, feat, label,lengths)
     
     def transform_train(self,coord, feat, label):
         
@@ -226,12 +231,16 @@ class SVGDataset(Dataset):
         return torch.FloatTensor(coord), torch.FloatTensor(feat), torch.LongTensor(label), torch.FloatTensor(lengths)
         
 
-    def collate_fn(self,batch):
-        coord, feat, label,lengths = list(zip(*batch))
-        offset, count = [], 0
-        for item in coord:
-            count += item.shape[0]
-            offset.append(count)
+    def collate_fn(self, batch):
+        parts = list(zip(*batch))
+        if self.visualize:
+            coord, feat, label, lengths, json_file = parts
+        else:
+            coord, feat, label, lengths = parts
+            json_file = None
+
+        offset = torch.cumsum(torch.tensor([c.shape[0] for c in coord]), 0)
         lengths = torch.cat(lengths) if lengths[0] is not None else None
-        return torch.cat(coord), torch.cat(feat), torch.cat(label), torch.IntTensor(offset),lengths
-  
+        
+        result = (torch.cat(coord), torch.cat(feat), torch.cat(label), offset.int(), lengths)
+        return (*result, json_file) if self.visualize else result

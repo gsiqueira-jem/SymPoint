@@ -7,10 +7,11 @@ from .svg import SVGDataset
 __all__ = ["SVGDataset", "build_dataset"]
 
 
-def build_dataset(data_cfg, logger):
+def build_dataset(data_cfg, logger, visualize=False):
     assert "type" in data_cfg
     _data_cfg = data_cfg.copy()
     _data_cfg["logger"] = logger
+    _data_cfg["visualize"] = visualize
     data_type = _data_cfg.pop("type")
     
     if data_type == "svg":

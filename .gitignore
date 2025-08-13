@@ -3,6 +3,7 @@ dataset
 *.linux-x86_64-cpython-38
 # Byte-compiled / optimized / DLL files
 */__pycache__/
+visualise_outputs
 *.py[cod]
 *$py.class
 __pycache__

@@ -43,13 +43,13 @@ def get_args():
         "--config",
         type=str,
         help="Path to the configuration file.",
-        default="inference/svg_pointT.yaml",
+        default="configs/svg//svg_pointT.yaml",
     )
     parser.add_argument(
         "--checkpoint",
         type=str,
         help="Path to the model checkpoint.",
-        default="inference/best.pth",
+        default="checkpoints/best.pth",
     )
     parser.add_argument("--seed", type=int, default=2000, help="Random seed for reproducibility.")
     parser.add_argument(
@@ -115,9 +115,9 @@ def process():
     load_checkpoint(args.checkpoint, logger, model)
     
     # Load dataset and dataloader
-    val_set = build_dataset(cfg.data.test, logger)
+    val_set = build_dataset(cfg.data.test, logger, visualize=True)
     dataloader = build_dataloader(
-        args, val_set, training=False, dist=False, visualise=True, **cfg.dataloader.test
+        args, val_set, training=False, dist=False, **cfg.dataloader.test
     )
     print("Exited dataloader in visualise.py")
     
@@ -131,9 +131,6 @@ def process():
         for i, batch in enumerate(tqdm(dataloader)):
             print("Entered dataloader loop.....................")
             json_file = batch[-1][0]  # Extracts JSON file name from batch
-            # print(f"Length of batch: {len(batch)}")
-            # print(f"batch0: {batch[0]}, {len(batch[0])}")
-            # print(f"json_file: {batch}, {json_file}")
 
             # Ensure json_file is a valid path before using it
             if not isinstance(json_file, str):
@@ -154,16 +151,16 @@ def process():
             # Processes results and saves modified SVG
             if args.out:
                 os.makedirs(args.out, exist_ok=True)
-                instances = [len(instance["masks"]) for instance in res["instances"]]
+                instances = res["instances"]
                 if len(instances) == 0:
                     continue
                 
                 # Prepares estimated contents for each element
-                num = max(instances)
+                num = max(len(instance["masks"]) for instance in instances)
                 estimated_contents = [
                     {
                         "instanceId": 0,
-                        "semanticId": 0,
+                        "semanticId": 36,
                     }
                 ] * num
                 
