@@ -259,14 +259,22 @@ def interpolation(xyz, new_xyz, feat, offset, new_offset, k=3):
     output: (n, c)
     """
     assert xyz.is_contiguous() and new_xyz.is_contiguous() and feat.is_contiguous()
+
     idx, dist = knnquery(k, xyz, new_xyz, offset, new_offset)  # (n, 3), (n, 3)
     dist_recip = 1.0 / (dist + 1e-8)  # (n, 3)
     norm = torch.sum(dist_recip, dim=1, keepdim=True)
     weight = dist_recip / norm  # (n, 3)
 
     new_feat = torch.cuda.FloatTensor(new_xyz.shape[0], feat.shape[1]).zero_()
+    
+    # Ensure idx is within the bounds of feat
+    # Check if any index is out of bounds
+    max_idx = feat.size(0) - 1
+    idx = torch.clamp(idx, 0, max_idx)
+
     for i in range(k):
         new_feat += feat[idx[:, i].long(), :] * weight[:, i].unsqueeze(-1)
+    
     return new_feat
 
 
