@@ -5,7 +5,6 @@ import xml.etree.ElementTree as ET
 from svgpathtools import parse_path
 from collections import defaultdict
 import numpy as np
-#from sklearn.metrics.pairwise import euclidean_distances
 
 LABEL_NUM = 35
 COMMANDS = ['Line', 'Arc','circle', 'ellipse']

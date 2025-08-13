@@ -1,11 +1,7 @@
 import argparse
 import glob
 from itertools import chain
-import json
-import math
 import os
-import re
-import time
 import xml.etree.ElementTree as ET # ElementTree package helps read and modify XML files
 from collections import defaultdict # Same as a python dictionary but returns a default value for keys that don't exist
 
@@ -15,11 +11,10 @@ import torch
 from tqdm import tqdm
 import yaml
 from munch import Munch
-from svgpathtools import parse_path
 
 from svgnet.evaluation.point_wise_eval import InstanceEval
 from svgnet.model.svgnet import SVGNet as svgnet
-from svgnet.util import get_root_logger, init_dist, load_checkpoint
+from svgnet.util import get_root_logger, load_checkpoint
 from svgnet.data import build_dataloader, build_dataset
 from svgnet.data.svg import SVG_CATEGORIES
 

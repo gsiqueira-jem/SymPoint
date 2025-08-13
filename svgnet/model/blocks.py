@@ -2,8 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-import numpy as np
-from modules.pointops.functions import pointops
 from .utils import *
 from .basic_operators import *
 from .basic_operators import _eps, _inf

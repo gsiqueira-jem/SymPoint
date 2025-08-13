@@ -61,7 +61,7 @@ As the Attention with Connection Module(ACM) and  Contrastive Connection Learnin
 ## 📌Citation
 If you find our paper and code useful in your research, please consider giving a star and citation.
 <pre><code>
-    @article{liu2024symbol,
+  @article{liu2024symbol,
   title={Symbol as Points: Panoptic Symbol Spotting via Point-based Representation},
   author={Liu, Wenlong and Yang, Tianyu and Wang, Yuhan and Yu, Qizhi and Zhang, Lei},
   journal={arXiv preprint arXiv:2401.10556},

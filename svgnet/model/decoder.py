@@ -6,7 +6,6 @@ from torch.nn import functional as F
 from torch.cuda.amp import autocast
 from .position_embedding import PositionEmbeddingCoordsSine
 from .basic_operators import get_subscene_features
-from .dn_query import CDNQueries
 
 class Decoder(nn.Module):
     def __init__(self,cfg,planes):
