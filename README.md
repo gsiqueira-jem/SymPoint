@@ -22,8 +22,8 @@ conda create -n spv1 python=3.8 -y
 conda activate spv1
 
 pip install torch==1.10.0+cu111 torchvision==0.11.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html
-pip install gdown mmcv==0.2.14 svgpathtools==1.6.1 munch==2.5.0 tensorboard==2.12.0 tensorboardx==2.5.1 detectron2==0.6
-python -m pip install 'git+https://github.com/facebookresearch/detectron2.git'
+pip install gdown mmcv==0.2.14 svgpathtools==1.6.1 munch==2.5.0 tensorboard==2.12.0 tensorboardx==2.5.1 
+python -m pip install detectron2==0.6.0 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.10/index.html
 
 # compile pointops
 cd modules/pointops
