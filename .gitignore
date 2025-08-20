@@ -1,5 +1,10 @@
 dataset
 *.pth
+*.rar
+*.dxf
+*.Identifier
+*.json 
+
 *.linux-x86_64-cpython-38
 # Byte-compiled / optimized / DLL files
 */__pycache__/
