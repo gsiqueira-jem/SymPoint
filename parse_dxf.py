@@ -51,7 +51,7 @@ def process_line(doc, entity, start, end):
     inds = [0, 1/3, 2/3, 1.0]
     lx, ly = end[0] - start[0], end[1] - start[1]
 
-    arg = [[start[0] + lx * ind, start[1] + ly * ind] for ind in inds]
+    arg = [v for ind in inds for v in (start[0] + lx * ind, start[1] + ly * ind)]
     
     return length, rgb, thickness, arg
     
@@ -65,7 +65,7 @@ def process_circle(doc, entity):
     thickness = get_thickness(entity)
     
     thetas = [0,math.pi/2, math.pi, 3 * math.pi/2]
-    arg = [[cx + r * math.cos(theta), cy + r * math.sin(theta)] for theta in thetas]
+    arg = [v  for theta in thetas for v in (cx + r * math.cos(theta), cy + r * math.sin(theta))]
 
     return length, rgb, thickness, arg
 
@@ -85,7 +85,7 @@ def process_ellipse(doc, entity):
     thickness = get_thickness(entity)
 
     thetas = [0, math.pi/2, math.pi, 3 * math.pi/2]
-    arg = [[cx + a * math.cos(theta), cy + b * math.sin(theta)] for theta in thetas]
+    arg = [v for theta in thetas for v in (cx + a * math.cos(theta), cy + b * math.sin(theta))]
 
     return length, rgb, thickness, arg
 
@@ -105,7 +105,7 @@ def process_arc(doc, entity):
     parts = [0, 1/3, 2/3, 1]
     thetas = [start_theta + d_theta * part for part in parts]
 
-    arg = [[cx + r * math.cos(theta), cy + r * math.sin(theta)] for theta in thetas]
+    arg = [v  for theta in thetas for v in (cx + r * math.cos(theta), cy + r * math.sin(theta))]
     
     return length, rgb, thickness, arg
 
@@ -120,6 +120,7 @@ def parse_dxf(dxf_file):
     width = max_x - min_x
     height = max_y - min_y
 
+    handles = []
     commands = []
     args = [] # (x1,y1,x2,y2,x3,y3,x4,y4) 4points
     lengths = []
@@ -134,6 +135,7 @@ def parse_dxf(dxf_file):
             start, end = entity.dxf.start, entity.dxf.end
             length, rgb, thickness, arg = process_line(doc, entity, start, end)
             
+            handles.append(entity.dxf.handle) 
             commands.append(COMMANDS.index("line"))
             layerIds.append(layerId)
             lengths.append(length)
@@ -149,7 +151,8 @@ def parse_dxf(dxf_file):
             
             for start, end in segments:
                 length, rgb, thickness, arg = process_line(doc, entity, start, end)
-                
+
+                handles.append(entity.dxf.handle) 
                 commands.append(COMMANDS.index("line"))
                 layerIds.append(layerId)
                 lengths.append(length)
@@ -160,8 +163,6 @@ def parse_dxf(dxf_file):
         for entity in msp.query(f"POLYLINE{query}"):
             points = list(entity.points())
             
-            print(f"p {points}")
-
             if entity.is_closed: 
                 segments = list(zip(points, points[1:] + points[:1]))
             else: 
@@ -170,6 +171,7 @@ def parse_dxf(dxf_file):
             for start, end in segments:
                 length, rgb, thickness, arg = process_line(doc, entity, start, end)
                 
+                handles.append(entity.dxf.handle) 
                 commands.append(COMMANDS.index("line"))
                 layerIds.append(layerId)
                 lengths.append(length)
@@ -180,6 +182,7 @@ def parse_dxf(dxf_file):
         for entity in msp.query(f"CIRCLE{query}"):
             length, rgb, thickness, arg = process_circle(doc, entity)
 
+            handles.append(entity.dxf.handle) 
             commands.append(COMMANDS.index("circle"))
             layerIds.append(layerId)
             lengths.append(length)
@@ -190,7 +193,8 @@ def parse_dxf(dxf_file):
         for entity in msp.query(f"ELLIPSE{query}"):
             length, rgb, thickness, arg = process_ellipse(doc, entity)
             
-            commands.append(COMMANDS.index("circle"))
+            handles.append(entity.dxf.handle) 
+            commands.append(COMMANDS.index("ellipse"))
             layerIds.append(layerId)
             lengths.append(length)
             strokes.append(rgb)
@@ -200,7 +204,8 @@ def parse_dxf(dxf_file):
         for entity in msp.query(f"ARC{query}"):
             length, rgb, thickness, arg = process_arc(doc, entity)
 
-            commands.append(COMMANDS.index("circle"))
+            handles.append(entity.dxf.handle) 
+            commands.append(COMMANDS.index("arc"))
             layerIds.append(layerId)
             lengths.append(length)
             strokes.append(rgb)
@@ -214,8 +219,10 @@ def parse_dxf(dxf_file):
     else: avg_thickness = 50
 
     widths = [avg_thickness if th == 0 else th for th in widths]
-
+    widths = [round(width / max(widths), 2) for width in widths]
+    
     json_dicts = {
+        "handles":handles,
         "commands":commands,
         "args":args,
         "lengths":lengths,
